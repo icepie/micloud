@@ -1,8 +1,9 @@
 package xiaomiio
 
 import (
+	"encoding/json"
 	"errors"
-	"log"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -18,9 +19,14 @@ const (
 	MINA_UA             = "MiHome/6.0.103 (com.xiaomi.mihome; build:6.0.103.1; iOS 14.4.0) Alamofire/6.0.103 MICO/iOSApp/appStore/6.0.103"
 	MIIO_UA             = "iOS-14.4-6.0.103-iPhone12,3--D7744744F7AF32F0544445285880DD63E47D9BE9-8816080-84A3F44E137B71AE-iPhone"
 	MIIO_SID            = "xiaomiio"
-	Default_Country     = "cn"
+	MIIO_BASE_API       = "https://api.io.mi.com/app"
+	MIIO_I18N_API       = "https://%s.api.io.mi.com/app/i18n"
+	DEFAULT_COUNTRY     = "cn"
 	SERVICE_LOGIN_AUTH2 = "https://account.xiaomi.com/pass/serviceLoginAuth2"
 	SERVICE_LOGIN       = "https://account.xiaomi.com/pass/serviceLogin"
+
+	//  Error define
+	ERROR_NOT_LOGGED = "you are not logged in"
 )
 
 //
@@ -65,7 +71,7 @@ func NewXiaoMiio(username string, password string) *XiaoMiio {
 		Client:   client,
 		Password: password,
 		Username: username,
-		Country:  Default_Country,
+		Country:  DEFAULT_COUNTRY,
 	}
 }
 
@@ -118,7 +124,7 @@ func (xm *XiaoMiio) loginStep2(authSign string) (locationUrl string, err error) 
 
 	jsonStr := resp.String()
 
-	if gjson.Get(jsonStr, "code").Int() != 0 {
+	if gjson.Get(jsonStr, "result").String() != "ok" {
 		err = errors.New(gjson.Get(jsonStr, "description").String())
 		return
 	}
@@ -156,7 +162,7 @@ func (xm *XiaoMiio) loginStep3(locationUrl string) (err error) {
 }
 
 // 是否登录
-func (xm *XiaoMiio) IsLogin() bool {
+func (xm *XiaoMiio) IsLogged() bool {
 
 	jsonStr, err := xm.loginStep1()
 	if err != nil {
@@ -171,19 +177,16 @@ func (xm *XiaoMiio) Login() (err error) {
 
 	jsonStr, err := xm.loginStep1()
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
 	locationUrl, err := xm.loginStep2(jsonStr)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
 	err = xm.loginStep3(locationUrl)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
@@ -191,4 +194,65 @@ func (xm *XiaoMiio) Login() (err error) {
 
 	return
 
+}
+
+func (xm *XiaoMiio) getRequestUrl() string {
+	if xm.Country == DEFAULT_COUNTRY {
+		return MIIO_BASE_API
+	}
+
+	return fmt.Sprintf(MIIO_I18N_API, xm.Country)
+}
+
+// data: json string
+func (xm *XiaoMiio) Request(path string, data string) (devices []Device, err error) {
+
+	if !xm.IsLogged() {
+		err = errors.New(ERROR_NOT_LOGGED)
+		return
+	}
+
+	url := xm.getRequestUrl() + path
+
+	nonce, err := micloud.GenNonce()
+	if err != nil {
+		return
+	}
+
+	signedNonce, err := micloud.GenSignedNonce(xm.SecurityToken, nonce)
+	if err != nil {
+		return
+	}
+
+	signature, err := micloud.GenSignature(path, signedNonce, nonce, data)
+	if err != nil {
+		return
+	}
+
+	// var ret RespRet
+
+	resp, err := xm.Client.R().
+		SetQueryParams(
+			map[string]string{
+				"signature": signature,
+				"_nonce":    nonce,
+				"data":      data,
+			},
+		).
+		SetHeaders(map[string]string{
+			"x-xiaomi-protocal-flag-cli": "PROTOCAL-HTTP2",
+		}).
+		Get(url)
+
+	if err != nil {
+		return
+	}
+
+	// jsonStr := resp.Body()
+
+	// log.Println(gjson.Get(resp.String(), "result.list").Value().(Device))
+
+	err = json.Unmarshal([]byte(gjson.Get(resp.String(), "result.list").String()), &devices)
+
+	return
 }

@@ -12,29 +12,33 @@ import (
 	"time"
 )
 
-// 随机生成16位字符串的设备ID
+//
 func GenRandomDeviceID() string {
 	return "3C861A5820190419"
 }
 
-// md5 加密
+// md5 hash
 func MD5(s string) string {
 	sum := md5.Sum([]byte(s))
 	return hex.EncodeToString(sum[:])
 }
 
-func GenNonce() string {
+func GenNonce() (n string, err error) {
 	tb := make([]byte, 4)
 	binary.LittleEndian.PutUint32(tb, uint32(time.Now().Unix()/60))
 
 	nb := make([]byte, 8)
-	_, _ = rand.Read(nb)
+	_, err = rand.Read(nb)
+	if err != nil {
+		return
+	}
 
-	return base64.StdEncoding.EncodeToString(append(nb, tb...))
+	n = base64.StdEncoding.EncodeToString(append(nb, tb...))
+	return
 }
 
 // Nonce signed with ssecret
-func GetSignedNonce(ssecret string, nonce string) (signedNonce string, err error) {
+func GenSignedNonce(ssecret string, nonce string) (signedNonce string, err error) {
 	h := sha256.New()
 
 	ssecretDecode, err := base64.StdEncoding.DecodeString(ssecret)
@@ -57,7 +61,6 @@ func GetSignedNonce(ssecret string, nonce string) (signedNonce string, err error
 }
 
 // Request signature based on url, signed_nonce, nonce and data
-
 func GenSignature(path string, signedNonce string, nonce string, data string) (signature string, err error) {
 	sign := strings.Join([]string{path, signedNonce, nonce, "data=" + data}, "&")
 
