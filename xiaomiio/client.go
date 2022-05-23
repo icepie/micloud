@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	APP_DEVICE_ID       = "3C861A5820190429"
+	// APP_DEVICE_ID       = "3C861A5820190429"
 	SDK_VER             = "3.9"
 	APP_UA              = "APP/com.xiaomi.mihome APPV/6.0.103 iosPassportSDK/3.9.0 iOS/14.4 miHSTS"
 	MINA_UA             = "MiHome/6.0.103 (com.xiaomi.mihome; build:6.0.103.1; iOS 14.4.0) Alamofire/6.0.103 MICO/iOSApp/appStore/6.0.103"
@@ -205,7 +205,7 @@ func (xm *XiaoMiio) getRequestUrl() string {
 }
 
 // data: json string
-func (xm *XiaoMiio) Request(path string, data string) (devices []Device, err error) {
+func (xm *XiaoMiio) Request(path string, data string) (ret string, err error) {
 
 	if !xm.IsLogged() {
 		err = errors.New(ERROR_NOT_LOGGED)
@@ -244,15 +244,116 @@ func (xm *XiaoMiio) Request(path string, data string) (devices []Device, err err
 		}).
 		Get(url)
 
+	ret = resp.String()
+
+	return
+
+}
+
+func (xm *XiaoMiio) GetDevicesByRaw(req GetDevicesReq) (devices []Device, err error) {
+
+	jsonBytes, err := json.Marshal(req)
 	if err != nil {
 		return
 	}
 
-	// jsonStr := resp.Body()
+	resp, err := xm.Request("/home/device_list", string(jsonBytes))
+	if err != nil {
+		return
+	}
 
-	// log.Println(gjson.Get(resp.String(), "result.list").Value().(Device))
-
-	err = json.Unmarshal([]byte(gjson.Get(resp.String(), "result.list").String()), &devices)
+	err = json.Unmarshal([]byte(gjson.Get(resp, "result.list").String()), &devices)
 
 	return
+}
+
+func (xm *XiaoMiio) GetDevices() (devices []Device, err error) {
+	return xm.GetDevicesByRaw(GetDevicesReq{
+		GetVirtualModel: false,
+		GetHuamiDevices: 0,
+	})
+}
+
+func (xm *XiaoMiio) GetProps(params ...PropParam) (ret []PropRet, err error) {
+	paramsReq := PropParamsReq{
+		Params: params,
+	}
+
+	jsonBytes, err := json.Marshal(paramsReq)
+	if err != nil {
+		return
+	}
+
+	resp, err := xm.Request("/miotspec/prop/get", string(jsonBytes))
+	if err != nil {
+		return
+	}
+
+	if gjson.Get(resp, "code").Int() != 0 {
+		err = errors.New(gjson.Get(resp, "message").String())
+		return
+	}
+
+	json.Unmarshal([]byte(gjson.Get(resp, "result").String()), &ret)
+
+	return
+
+}
+
+func (xm *XiaoMiio) SetProps(params ...PropParam) (ret []PropRet, err error) {
+
+	paramsReq := PropParamsReq{
+		Params: params,
+	}
+
+	jsonBytes, err := json.Marshal(paramsReq)
+	if err != nil {
+		return
+	}
+
+	resp, err := xm.Request("/miotspec/prop/set", string(jsonBytes))
+	if err != nil {
+		return
+	}
+
+	if gjson.Get(resp, "code").Int() != 0 {
+		err = errors.New(gjson.Get(resp, "message").String())
+		return
+	}
+
+	json.Unmarshal([]byte(gjson.Get(resp, "result").String()), &ret)
+
+	return
+
+}
+
+func (xm *XiaoMiio) DoAction(param ActionParam) (ret ActionRet, err error) {
+
+	if param.In == nil {
+		param.In = []interface{}{}
+	}
+
+	req := ActionParamReq{
+		Param: param,
+	}
+
+	jsonBytes, err := json.Marshal(req)
+	if err != nil {
+		return
+	}
+
+	resp, err := xm.Request("/miotspec/action", string(jsonBytes))
+	if err != nil {
+		return
+	}
+
+	if gjson.Get(resp, "code").Int() != 0 {
+		err = errors.New(gjson.Get(resp, "message").String())
+		return
+	}
+
+	json.Unmarshal([]byte(gjson.Get(resp, "result").String()), &ret)
+
+	return
+
 }
