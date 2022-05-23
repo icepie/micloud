@@ -18,7 +18,7 @@ const (
 	MINA_UA             = "MiHome/6.0.103 (com.xiaomi.mihome; build:6.0.103.1; iOS 14.4.0) Alamofire/6.0.103 MICO/iOSApp/appStore/6.0.103"
 	MIIO_UA             = "iOS-14.4-6.0.103-iPhone12,3--D7744744F7AF32F0544445285880DD63E47D9BE9-8816080-84A3F44E137B71AE-iPhone"
 	MIIO_SID            = "xiaomiio"
-	Default_Country     = "CN"
+	Default_Country     = "cn"
 	SERVICE_LOGIN_AUTH2 = "https://account.xiaomi.com/pass/serviceLoginAuth2"
 	SERVICE_LOGIN       = "https://account.xiaomi.com/pass/serviceLogin"
 )
@@ -67,6 +67,12 @@ func NewXiaoMiio(username string, password string) *XiaoMiio {
 		Username: username,
 		Country:  Default_Country,
 	}
+}
+
+// Set the country
+func (xm *XiaoMiio) SetCountry(country string) *XiaoMiio {
+	xm.Country = strings.ToLower(country)
+	return xm
 }
 
 func (xm *XiaoMiio) loginStep1() (jsonStr string, err error) {
@@ -143,7 +149,7 @@ func (xm *XiaoMiio) loginStep3(locationUrl string) (err error) {
 		return
 	}
 
-	log.Println(resp.Cookies())
+	xm.Client.SetCookies(resp.Cookies())
 
 	return
 
