@@ -357,3 +357,12 @@ func (xm *XiaoMiio) DoAction(param ActionParam) (ret ActionRet, err error) {
 	return
 
 }
+
+// func (xm *XiaoMiio) GetUserDeviceDataByRaw(did string) (err error) {
+
+// 	// resp, err := xm.Request("/miotspec/action", string(jsonBytes))
+// 	// if err != nil {
+// 	// 	return
+// 	// }
+
+// }

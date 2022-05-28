@@ -77,7 +77,7 @@ type PropRets []PropRet
 
 type PropParamsReq struct {
 	Params PropParams `json:"params"`
-	Method string     `json:"method,omitempty"`
+	// Method string     `json:"method,omitempty"`
 }
 
 type ActionRet struct {
