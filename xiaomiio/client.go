@@ -300,7 +300,7 @@ func (xm *XiaoMiio) GetProps(params ...PropParam) (ret []PropRet, err error) {
 
 }
 
-func (xm *XiaoMiio) SetProps(params ...PropParam) (ret []PropRet, err error) {
+func (xm *XiaoMiio) SetProps(params ...PropParam) (ret PropRets, err error) {
 
 	paramsReq := PropParamsReq{
 		Params: params,
