@@ -329,10 +329,6 @@ func (xm *XiaoMiio) SetProps(params ...PropParam) (ret PropRets, err error) {
 
 func (xm *XiaoMiio) DoAction(param ActionParam) (ret ActionRet, err error) {
 
-	if param.In == nil {
-		param.In = []interface{}{}
-	}
-
 	req := ActionParamReq{
 		Param: param,
 	}
@@ -358,11 +354,44 @@ func (xm *XiaoMiio) DoAction(param ActionParam) (ret ActionRet, err error) {
 
 }
 
-// func (xm *XiaoMiio) GetUserDeviceDataByRaw(did string) (err error) {
+//
+func (xm *XiaoMiio) BatchDeviceDatas(param ...BatchDeviceDatasReq) (ret BatchDeviceDatasRet, err error) {
 
-// 	// resp, err := xm.Request("/miotspec/action", string(jsonBytes))
-// 	// if err != nil {
-// 	// 	return
-// 	// }
+	jsonBytes, err := json.Marshal(param)
+	if err != nil {
+		return
+	}
 
-// }
+	resp, err := xm.Request("/device/batchdevicedatas", string(jsonBytes))
+	if err != nil {
+		return
+	}
+
+	if gjson.Get(resp, "code").Int() != 0 {
+		err = errors.New(gjson.Get(resp, "message").String())
+		return
+	}
+
+	// log.Println(gjson.Get(resp, "result").Value().([]interface{}))
+
+	r, ok := gjson.Get(resp, "result").Value().(map[string]any)
+	if !ok {
+		err = errors.New("invalid ret")
+		return
+	}
+
+	ret = make(BatchDeviceDatasRet)
+
+	// tidy map
+	for k, v := range r {
+		switch v := v.(type) {
+		case map[string]any:
+			ret[k] = v
+		default:
+			continue
+		}
+	}
+
+	return
+
+}

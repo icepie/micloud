@@ -29,18 +29,18 @@ type Device struct {
 		AllowValues string `json:"allow_values"`
 		Name        string `json:"name"`
 	} `json:"method,omitempty"`
-	Password  string      `json:"password"`
-	P2PID     string      `json:"p2p_id"`
-	Rssi      int         `json:"rssi"`
-	FamilyID  int         `json:"family_id"`
-	ResetFlag int         `json:"reset_flag"`
-	Extra     interface{} `json:"extra,omitempty"`
+	Password  string `json:"password"`
+	P2PID     string `json:"p2p_id"`
+	Rssi      int    `json:"rssi"`
+	FamilyID  int    `json:"family_id"`
+	ResetFlag int    `json:"reset_flag"`
+	Extra     any    `json:"extra,omitempty"`
 }
 
 type RespRet struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Result  interface{} `json:"result"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Result  any    `json:"result"`
 }
 
 type GetDevicesReq struct {
@@ -51,18 +51,18 @@ type GetDevicesReq struct {
 }
 
 type PropParam struct {
-	Did   string      `json:"did"`
-	Siid  int         `json:"siid"`
-	Piid  int         `json:"piid"`
-	Value interface{} `json:"value,omitempty"`
+	Did   string `json:"did"`
+	Siid  int    `json:"siid"`
+	Piid  int    `json:"piid"`
+	Value any    `json:"value,omitempty"`
 }
 
 type ActionParam struct {
-	Did  string        `json:"did"`
-	Siid int           `json:"siid"`
-	Aiid int           `json:"aiid"`
-	In   []interface{} `json:"in"`
-	Out  []interface{} `json:"out,omitempty"`
+	Did  string `json:"did"`
+	Siid int    `json:"siid"`
+	Aiid int    `json:"aiid"`
+	In   []any  `json:"in"`
+	Out  []any  `json:"out,omitempty"`
 }
 
 type PropParams []PropParam
@@ -91,3 +91,10 @@ type ActionRet struct {
 type ActionParamReq struct {
 	Param ActionParam `json:"params"`
 }
+
+type BatchDeviceDatasReq struct {
+	Did   string   `json:"did"`
+	Props []string `json:"props"`
+}
+
+type BatchDeviceDatasRet = map[string]map[string]any
