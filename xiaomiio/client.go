@@ -20,7 +20,7 @@ const (
 	MIIO_UA             = "iOS-14.4-6.0.103-iPhone12,3--D7744744F7AF32F0544445285880DD63E47D9BE9-8816080-84A3F44E137B71AE-iPhone"
 	MIIO_SID            = "xiaomiio"
 	MIIO_BASE_API       = "https://api.io.mi.com/app"
-	MIIO_I18N_API       = "https://%s.api.io.mi.com/app/i18n"
+	MIIO_I18N_API       = "https://%s.api.io.mi.com/app"
 	DEFAULT_COUNTRY     = "cn"
 	SERVICE_LOGIN_AUTH2 = "https://account.xiaomi.com/pass/serviceLoginAuth2"
 	SERVICE_LOGIN       = "https://account.xiaomi.com/pass/serviceLogin"
