@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -394,4 +395,32 @@ func (xm *XiaoMiio) BatchDeviceDatas(param ...BatchDeviceDatasReq) (ret BatchDev
 
 	return
 
+}
+
+func (xm *XiaoMiio) GetUserDeviceData(param GetDeviceDataReq) (ret GetDeviceDataRet, err error) {
+
+	if param.Uid == "" {
+		param.Uid = fmt.Sprint(xm.UserId)
+	}
+
+	jsonBytes, err := json.Marshal(param)
+	if err != nil {
+		return
+	}
+
+	log.Println(string(jsonBytes))
+
+	resp, err := xm.Request("/user/get_user_device_data", string(jsonBytes))
+	if err != nil {
+		return
+	}
+
+	if gjson.Get(resp, "code").Int() != 0 {
+		err = errors.New(gjson.Get(resp, "message").String())
+		return
+	}
+
+	json.Unmarshal([]byte(gjson.Get(resp, "result").String()), &ret)
+
+	return
 }

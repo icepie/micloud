@@ -98,3 +98,23 @@ type BatchDeviceDatasReq struct {
 }
 
 type BatchDeviceDatasRet = map[string]map[string]any
+
+type GetDeviceDataReq struct {
+	Did       string `json:"did"`
+	Uid       string `json:"uid"`
+	Key       string `json:"key"`
+	Type      string `json:"type"`
+	TimeStart int    `json:"time_start"`
+	TimeEnd   int    `json:"time_end"`
+	Group     string `json:"group"`
+	Limit     int    `json:"limit"`
+}
+
+type GetDeviceDataRet []struct {
+	UID   string `json:"uid"`
+	Did   string `json:"did"`
+	Type  string `json:"type"`
+	Value string `json:"value"`
+	Time  int    `json:"time"`
+	Key   string `json:"key"`
+}
