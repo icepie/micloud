@@ -127,3 +127,41 @@ type SetDeviceDataReq struct {
 	Key   string      `json:"key"`
 	Value interface{} `json:"value"`
 }
+
+type GetHomeListReq struct {
+	Limit      int  `json:"limit"`
+	Fg         bool `json:"fg"`
+	FetchShare bool `json:"fetch_share"`
+}
+
+type GetHomeListRet struct {
+	Homelist []struct {
+		ID                  string        `json:"id"`
+		Name                string        `json:"name"`
+		Bssid               string        `json:"bssid"`
+		Dids                []interface{} `json:"dids"`
+		Icon                string        `json:"icon"`
+		Shareflag           int           `json:"shareflag"`
+		PermitLevel         int           `json:"permit_level"`
+		Status              int           `json:"status"`
+		Background          string        `json:"background"`
+		SmartRoomBackground string        `json:"smart_room_background"`
+		Longitude           float64       `json:"longitude"`
+		Latitude            float64       `json:"latitude"`
+		CityID              int           `json:"city_id"`
+		Address             string        `json:"address"`
+		CreateTime          int           `json:"create_time"`
+		Roomlist            []struct {
+			ID         string   `json:"id"`
+			Name       string   `json:"name"`
+			Bssid      string   `json:"bssid"`
+			Parentid   string   `json:"parentid"`
+			Dids       []string `json:"dids"`
+			Icon       string   `json:"icon"`
+			Background string   `json:"background"`
+			Shareflag  int      `json:"shareflag"`
+			CreateTime int      `json:"create_time"`
+		} `json:"roomlist"`
+		UID int `json:"uid"`
+	} `json:"homelist"`
+}

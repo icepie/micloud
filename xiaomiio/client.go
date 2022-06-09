@@ -443,3 +443,24 @@ func (xm *XiaoMiio) SetUserDeviceData(param ...SetDeviceDataReq) (err error) {
 	// json.Unmarshal([]byte(gjson.Get(resp, "result").String()), &ret)
 
 }
+
+func (xm *XiaoMiio) GetHomeList(param GetHomeListReq) (ret GetHomeListRet, err error) {
+
+	jsonBytes, err := json.Marshal(param)
+	if err != nil {
+		return
+	}
+
+	resp, err := xm.Request("/v2/homeroom/gethome", string(jsonBytes))
+	if err != nil {
+		return
+	}
+
+	if gjson.Get(resp, "code").Int() != 0 {
+		err = errors.New(gjson.Get(resp, "message").String())
+		return
+	}
+
+	json.Unmarshal([]byte(gjson.Get(resp, "result").String()), &ret)
+	return
+}
