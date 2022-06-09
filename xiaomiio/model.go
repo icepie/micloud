@@ -118,3 +118,12 @@ type GetDeviceDataRet []struct {
 	Time  int    `json:"time"`
 	Key   string `json:"key"`
 }
+
+type SetDeviceDataReq struct {
+	Uid   string      `json:"uid"`
+	Did   string      `json:"did"`
+	Time  int         `json:"time"`
+	Type  string      `json:"type"`
+	Key   string      `json:"key"`
+	Value interface{} `json:"value"`
+}
